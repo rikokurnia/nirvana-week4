@@ -3,14 +3,30 @@
 
 # 🎋 Nirvana Protocol: Equity-Streaming Engine
 
-Nirvana is a specialized Solana program designed for **Equity-Streaming**, a hybrid distribution model that synchronizes continuous linear token unlocks with event-driven performance milestones. 
+Nirvana is a specialized Solana program designed for **Equity-Streaming**, a hybrid distribution model that synchronizes continuous linear token unlocks with event-driven performance milestones.
 
 This project solves the "Gamble vs. Cashflow" dilemma for Web3 contributors by providing guaranteed liquidity (Base Layer) alongside performance-based rewards (Milestone Layer).
+
+## ✅ Acceptance Criteria - All Met
+
+| Criteria | Status |
+|----------|--------|
+| `create_stream` works - creator deposits, specifies recipient/start/end | ✅ |
+| Tokens locked in PDA - creator cannot withdraw back | ✅ |
+| Linear unlock: `unlocked = base_amount * (elapsed / duration)` | ✅ |
+| `withdraw` works - recipient claims unlocked tokens | ✅ |
+| Partial withdrawals work | ✅ |
+| Cannot withdraw more than unlocked | ✅ |
+| Cannot withdraw from someone else's stream | ✅ |
+| Unit tests: 0%, 25%, 50%, 100% unlock, partial/full withdraw, unauthorized | ✅ |
+
+**Deployed Program ID:** `AT8VxkydSXsBMPdXK3JyRZVhyBffr3XuB7w2DJLqfqyH` (Devnet)
+
+---
 
 ## 🚀 Quick Start (Under 15 Minutes)
 
 ### 1. Prerequisites
-Before setting up, ensure you have the following installed:
 * **Rust**: `rustc 1.75.0` or later
 * **Solana CLI**: `solana-cli 3.1.0` or later (Agave)
 * **Anchor CLI**: `anchor-cli 1.0.0`
@@ -21,8 +37,8 @@ Before setting up, ensure you have the following installed:
 Clone the repository and install dependencies:
 
 ```bash
-git clone https://github.com/soraonchain-byte/Nirvana.git
-cd Nirvana
+git clone https://github.com/rikokurnia/nirvana-week4.git
+cd nirvana-week4
 npm install
 ```
 
@@ -35,12 +51,11 @@ To compile the smart contract and generate the IDL:
 anchor build
 ```
 
-Note: This will generate the `target/` folder containing the program binary (`nirvana.so`) and IDL (`nirvana_protocol.json`).
+Note: This will generate the `target/` folder containing the program binary (`nirvana.so`) and IDL.
 
 ### 4. Running Tests
 
-**Option A: Manual (recommended)**
-
+**Local Validator:**
 ```bash
 # Terminal 1: Start local validator
 solana-test-validator --reset
@@ -48,21 +63,16 @@ solana-test-validator --reset
 # Terminal 2: Deploy and test
 solana config set --url localhost --keypair ~/.config/solana/id.json
 solana airdrop 100
-solana program deploy target/deploy/nirvana.so --program-id target/deploy/nirvana-keypair.json
+solana program deploy target/deploy/nirvana.so
 ANCHOR_WALLET=~/.config/solana/id.json \
 ANCHOR_PROVIDER_URL=http://localhost:8899 \
 npx ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts
 ```
 
-**Option B: Anchor test**
-
-Remove the `[scripts]` section from `Anchor.toml` (if present), then:
-
+**Devnet (already deployed):**
 ```bash
-anchor test
+anchor test --provider.cluster devnet
 ```
-
-Note: The test suite validates stream creation, time validation, and token transfers.
 
 ---
 
@@ -72,7 +82,6 @@ Note: The test suite validates stream creation, time validation, and token trans
 ---
 
 ## 📑 Program Features
-The program implements the following Equity-Streaming architecture:
 
 | Instruction | Description |
 |-------------|-------------|
@@ -94,7 +103,7 @@ solana config set --url devnet --keypair ~/.config/solana/id.json
 
 ### 2. Airdrop SOL for gas (if needed):
 ```bash
-solana airdrop 2
+solana airdrop 5
 ```
 
 ### 3. Deploy:
@@ -104,7 +113,7 @@ anchor program deploy --provider.cluster devnet
 
 Or manually:
 ```bash
-solana program deploy target/deploy/nirvana.so --program-id target/deploy/nirvana-keypair.json
+solana program deploy target/deploy/nirvana.so --program-id AT8VxkydSXsBMPdXK3JyRZVhyBffr3XuB7w2DJLqfqyH
 ```
 
 ---
@@ -117,10 +126,10 @@ This repository is equipped with **GitHub Actions**. Every push or pull request 
 
 ---
 
-## 👥 Contributor Roles
+## 👥 Contributors
 
-* **Sora Onchain (@SoraOnchain)**: Lead Architect. Responsible for manual project initialization, account struct definitions, core instruction scaffolding, and CI pipeline setup.
-* **Riko Kurnia (@rikokurnia)**: Frontend Integration & Documentation. Responsible for README verification, local build testing, and frontend workspace setup.
+* **Sora Onchain (@soraonchain-byte)**: Lead Architect. Project initialization, account struct definitions, core instruction scaffolding, CI pipeline setup.
+* **Riko Kurnia (@rikokurnia)**: Frontend Integration & Documentation. README verification, local build testing, acceptance criteria implementation and testing.
 
 ---
 
