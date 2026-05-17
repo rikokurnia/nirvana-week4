@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Hanken_Grotesk, Inter, JetBrains_Mono } from "next/font/google";
+import { PrivyProvider } from "./providers/privy-provider";
 import "./globals.css";
 
 const inter = Inter({
@@ -36,7 +37,7 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${hankenGrotesk.variable} ${jetbrainsMono.variable} min-h-screen antialiased`}
       >
-        {children}
+        <PrivyProvider>{children}</PrivyProvider>
       </body>
     </html>
   );
