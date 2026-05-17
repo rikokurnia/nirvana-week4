@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Hanken_Grotesk, Inter, JetBrains_Mono } from "next/font/google";
 import { PrivyProvider } from "./providers/privy-provider";
+import AIChat from "./components/ai-chat";
 import "./globals.css";
 
 const inter = Inter({
@@ -37,7 +38,10 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${hankenGrotesk.variable} ${jetbrainsMono.variable} min-h-screen antialiased`}
       >
-        <PrivyProvider>{children}</PrivyProvider>
+        <PrivyProvider>
+          {children}
+          <AIChat />
+        </PrivyProvider>
       </body>
     </html>
   );

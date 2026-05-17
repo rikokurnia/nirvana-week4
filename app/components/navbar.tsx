@@ -1,12 +1,14 @@
 "use client";
 
-import { Wallet, Boxes, LayoutDashboard } from "lucide-react";
+import { Wallet, Boxes, LayoutDashboard, RefreshCw } from "lucide-react";
 import { useAuth } from "@/app/providers/privy-provider";
+import { useRole } from "@/hooks/use-role";
 import { formatAddress } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 
 export default function Navbar() {
   const { login, logout, authenticated, user } = useAuth();
+  const { role } = useRole();
   const router = useRouter();
 
   return (
@@ -30,12 +32,21 @@ export default function Navbar() {
         <div className="flex items-center gap-4">
           {authenticated ? (
             <>
+              {role && (
+                <button
+                  onClick={() => router.push(`/dashboard/${role}`)}
+                  className="flex items-center gap-2 border border-mint/30 text-mint font-mono text-xs font-bold px-4 py-2 rounded-sm hover:bg-mint/10 transition-all uppercase"
+                >
+                  <LayoutDashboard className="w-3 h-3" />
+                  Dashboard
+                </button>
+              )}
               <button
-                onClick={() => router.push("/dashboard")}
-                className="flex items-center gap-2 border border-mint/30 text-mint font-mono text-xs font-bold px-4 py-2 rounded-sm hover:bg-mint/10 transition-all uppercase"
+                onClick={() => router.push("/onboarding/role")}
+                className="hidden sm:flex items-center gap-1 text-on-surface-variant font-mono text-[10px] hover:text-mint transition-colors uppercase tracking-widest"
               >
-                <LayoutDashboard className="w-3 h-3" />
-                Dashboard
+                <RefreshCw className="w-3 h-3" />
+                Role
               </button>
               <span className="font-mono text-xs text-on-surface-variant hidden sm:block">
                 {formatAddress(user?.wallet?.address || "")}
