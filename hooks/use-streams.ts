@@ -17,9 +17,10 @@ const WORKER_MOCK: DistributionState[] = [
     recipient: "DYw8jCTfwHNRJhhmFcbXvVDTqWMEVFBX6ZKUmG5CNSKK",
     tokenMint: "So11111111111111111111111111111111111111112",
     tokenSymbol: "SOL",
-    baseAmount: BigInt(500_000_000_000),
-    milestoneAmount: BigInt(200_000_000_000),
-    claimedAmount: BigInt(125_000_000_000),
+    baseAmount: BigInt(250_000_000_000),
+    milestoneAmount: BigInt(150_000_000_000),
+    cliffAmount: BigInt(100_000_000_000),
+    claimedAmount: BigInt(180_000_000_000),
     startTime: now - month * 3,
     endTime: now + month * 9,
     cliffTime: now - month * 2,
@@ -32,8 +33,9 @@ const WORKER_MOCK: DistributionState[] = [
     recipient: "DYw8jCTfwHNRJhhmFcbXvVDTqWMEVFBX6ZKUmG5CNSKK",
     tokenMint: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
     tokenSymbol: "USDC",
-    baseAmount: BigInt(100_000_000_000),
-    milestoneAmount: BigInt(50_000_000_000),
+    baseAmount: BigInt(70_000_000_000),
+    milestoneAmount: BigInt(10_000_000_000),
+    cliffAmount: BigInt(20_000_000_000),
     claimedAmount: BigInt(0),
     startTime: now - month,
     endTime: now + month * 11,
@@ -47,8 +49,9 @@ const WORKER_MOCK: DistributionState[] = [
     recipient: "DYw8jCTfwHNRJhhmFcbXvVDTqWMEVFBX6ZKUmG5CNSKK",
     tokenMint: "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263",
     tokenSymbol: "BONK",
-    baseAmount: BigInt(1_000_000_000_000),
+    baseAmount: BigInt(300_000_000_000),
     milestoneAmount: BigInt(500_000_000_000),
+    cliffAmount: BigInt(200_000_000_000),
     claimedAmount: BigInt(400_000_000_000),
     startTime: now - month * 6,
     endTime: now + month * 6,
@@ -64,6 +67,7 @@ function serialize(streams: DistributionState[]): string {
       ...s,
       baseAmount: s.baseAmount.toString(),
       milestoneAmount: s.milestoneAmount.toString(),
+      cliffAmount: s.cliffAmount.toString(),
       claimedAmount: s.claimedAmount.toString(),
     }))
   );
@@ -75,9 +79,10 @@ function deserialize(raw: string): DistributionState[] {
       (s: Record<string, unknown>) =>
         ({
           ...s,
-          baseAmount: BigInt(String(s.baseAmount)),
-          milestoneAmount: BigInt(String(s.milestoneAmount)),
-          claimedAmount: BigInt(String(s.claimedAmount)),
+          baseAmount: BigInt(String(s.baseAmount || 0)),
+          milestoneAmount: BigInt(String(s.milestoneAmount || 0)),
+          cliffAmount: BigInt(String(s.cliffAmount || 0)),
+          claimedAmount: BigInt(String(s.claimedAmount || 0)),
         } as DistributionState)
     );
   } catch {
@@ -97,11 +102,6 @@ export function useStreams() {
     }
   }, []);
 
-  const persist = useCallback((next: DistributionState[]) => {
-    setStreams(next);
-    localStorage.setItem(STORAGE_KEY, serialize(next));
-  }, []);
-
   const getWorkerStreams = useCallback(
     (workerAddress: string): DistributionState[] => {
       const saved = streams.filter((s) => s.recipient === workerAddress);
@@ -117,7 +117,9 @@ export function useStreams() {
   );
 
   const getStream = useCallback(
-    (id: string) => streams.find((s) => s.id === id) || WORKER_MOCK.find((s) => s.id === id),
+    (id: string) =>
+      streams.find((s) => s.id === id) ||
+      WORKER_MOCK.find((s) => s.id === id),
     [streams]
   );
 
@@ -163,13 +165,14 @@ export function useStreams() {
       tokenSymbol: string;
       baseAmount: number;
       milestoneAmount: number;
+      cliffAmount: number;
       startTime: number;
       endTime: number;
       cliffTime: number;
     }) => {
       setLoading(true);
       await new Promise((r) => setTimeout(r, 1500));
-      const decimals = 9;
+      const decimals = params.tokenSymbol === "USDC" ? 6 : 9;
       const newStream: DistributionState = {
         id: `stream_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
         authority: "7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU",
@@ -178,6 +181,7 @@ export function useStreams() {
         tokenSymbol: params.tokenSymbol,
         baseAmount: BigInt(Math.floor(params.baseAmount * 10 ** decimals)),
         milestoneAmount: BigInt(Math.floor(params.milestoneAmount * 10 ** decimals)),
+        cliffAmount: BigInt(Math.floor(params.cliffAmount * 10 ** decimals)),
         claimedAmount: BigInt(0),
         startTime: params.startTime,
         endTime: params.endTime,

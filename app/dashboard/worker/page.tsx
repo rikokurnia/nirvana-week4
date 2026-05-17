@@ -63,7 +63,7 @@ export default function WorkerPage() {
         <div className="grid grid-cols-1 gap-4">
           {myStreams.map((stream) => {
             const claimable = calculateClaimable(stream);
-            const totalAmount = stream.baseAmount + stream.milestoneAmount;
+            const totalAmount = stream.baseAmount + stream.milestoneAmount + stream.cliffAmount;
             const claimedPct = Number((stream.claimedAmount * BigInt(100)) / totalAmount);
             const now = Date.now() / 1000;
             const pastCliff = now >= stream.cliffTime;
@@ -81,11 +81,15 @@ export default function WorkerPage() {
                           {stream.isCancelled ? "Cancelled" : "Active"}
                         </span>
                       </div>
-                      <p className="font-mono text-[10px] text-on-surface-variant/70">
-                        {formatTokenAmount(stream.baseAmount)} linear + {formatTokenAmount(stream.milestoneAmount)} milestone
-                      </p>
+                      <div className="flex items-center gap-2 font-mono text-[10px] text-on-surface-variant/50 uppercase tracking-widest">
+                        <span>{formatTokenAmount(stream.baseAmount)} linear</span>
+                        <span className="text-on-surface-variant/20">·</span>
+                        <span>{formatTokenAmount(stream.milestoneAmount)} milestone</span>
+                        <span className="text-on-surface-variant/20">·</span>
+                        <span>{formatTokenAmount(stream.cliffAmount)} cliff</span>
+                      </div>
                     </div>
-                    <div className="text-right">
+                    <div className="text-right shrink-0">
                       {claimable > BigInt(0) && (
                         <span className="font-mono text-xs text-mint font-bold block">
                           {formatTokenAmount(claimable)} ready

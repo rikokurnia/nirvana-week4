@@ -62,6 +62,9 @@ export default function CreateStreamPage() {
 
   const validRecipients = recipients.filter((r) => r.address.trim() && r.amount.trim() && parseFloat(r.amount) > 0);
   const totalAmount = validRecipients.reduce((sum, r) => sum + parseFloat(r.amount), 0);
+  const totalLinear = (totalAmount * selectedPreset.linearPercent) / 100;
+  const totalMilestone = (totalAmount * selectedPreset.milestonePercent) / 100;
+  const totalCliff = (totalAmount * selectedPreset.cliffPercent) / 100;
 
   const getSplit = (amount: string) => {
     if (!amount || !startDate || !endDate) return null;
@@ -86,8 +89,9 @@ export default function CreateStreamPage() {
         recipient: r.address.trim(),
         tokenMint,
         tokenSymbol,
-        baseAmount: split.linearAmount + split.cliffAmount,
+        baseAmount: split.linearAmount,
         milestoneAmount: split.milestoneAmount,
+        cliffAmount: split.cliffAmount,
         startTime: start,
         endTime: end,
         cliffTime: split.cliffTime,
@@ -256,19 +260,13 @@ export default function CreateStreamPage() {
 
               {validRecipients.length > 0 && startDate && endDate ? (
                 <div className="space-y-4">
-                  <div className="grid grid-cols-3 gap-2 text-center">
-                    <div>
-                      <span className="font-mono text-sm text-mint font-bold">{selectedPreset.linearPercent}%</span>
-                      <p className="font-mono text-[9px] text-on-surface-variant/50 uppercase tracking-widest mt-0.5">Linear</p>
-                    </div>
-                    <div>
-                      <span className="font-mono text-sm text-mint font-bold">{selectedPreset.milestonePercent}%</span>
-                      <p className="font-mono text-[9px] text-on-surface-variant/50 uppercase tracking-widest mt-0.5">Milestone</p>
-                    </div>
-                    <div>
-                      <span className="font-mono text-sm text-mint font-bold">{selectedPreset.cliffPercent}%</span>
-                      <p className="font-mono text-[9px] text-on-surface-variant/50 uppercase tracking-widest mt-0.5">Cliff</p>
-                    </div>
+                  <div className="text-center mb-2">
+                    <p className="font-headline text-xl font-bold text-mint tracking-tight">
+                      {totalAmount.toLocaleString()} {tokenSymbol}
+                    </p>
+                    <p className="font-mono text-[9px] text-on-surface-variant/50 uppercase tracking-widest mt-0.5">
+                      {selectedPreset.label} · {validRecipients.length} recipient{validRecipients.length !== 1 ? "s" : ""}
+                    </p>
                   </div>
 
                   <div className="h-2 bg-white/5 rounded-full overflow-hidden flex">
@@ -277,15 +275,42 @@ export default function CreateStreamPage() {
                     <div className="h-full bg-solana-green transition-all" style={{ width: `${selectedPreset.cliffPercent}%` }} />
                   </div>
 
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between py-2 border-b border-white/5">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-sm bg-linear-to-r from-mint to-solana-green" />
+                        <span className="font-mono text-xs text-on-surface-variant uppercase tracking-widest">Linear</span>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-mono text-sm text-on-surface font-bold">{totalLinear.toLocaleString()}</p>
+                        <p className="font-mono text-[9px] text-on-surface-variant/50">{selectedPreset.linearPercent}%</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between py-2 border-b border-white/5">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-sm bg-mint" />
+                        <span className="font-mono text-xs text-on-surface-variant uppercase tracking-widest">Milestone</span>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-mono text-sm text-on-surface font-bold">{totalMilestone.toLocaleString()}</p>
+                        <p className="font-mono text-[9px] text-on-surface-variant/50">{selectedPreset.milestonePercent}%</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between py-2">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-sm bg-solana-green" />
+                        <span className="font-mono text-xs text-on-surface-variant uppercase tracking-widest">Cliff Buffer</span>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-mono text-sm text-on-surface font-bold">{totalCliff.toLocaleString()}</p>
+                        <p className="font-mono text-[9px] text-on-surface-variant/50">{selectedPreset.cliffPercent}%</p>
+                      </div>
+                    </div>
+                  </div>
+
                   <div className="p-3 bg-mint/5 rounded-sm border border-mint/10">
                     <p className="font-sans text-xs text-on-surface-variant leading-relaxed">
                       {selectedPreset.description || `${selectedPreset.label}: ${selectedPreset.linearPercent}% linear salary, ${selectedPreset.milestonePercent}% milestone bonus, ${selectedPreset.cliffPercent}% cliff buffer.`}
-                    </p>
-                  </div>
-
-                  <div className="pt-4 border-t border-white/5">
-                    <p className="font-mono text-[10px] text-on-surface-variant/50 text-center uppercase tracking-widest leading-relaxed">
-                      {totalAmount.toLocaleString()} {tokenSymbol} split across {validRecipients.length} recipient{validRecipients.length !== 1 ? "s" : ""}
                     </p>
                   </div>
                 </div>

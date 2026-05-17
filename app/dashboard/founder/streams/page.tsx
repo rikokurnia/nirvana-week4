@@ -26,10 +26,10 @@ export default function FounderStreamsPage() {
         <div className="grid grid-cols-1 gap-4">
           {streams.map((stream) => {
             const claimable = calculateClaimable(stream);
-            const totalAmount = stream.baseAmount + stream.milestoneAmount;
+            const totalAmount = stream.baseAmount + stream.milestoneAmount + stream.cliffAmount;
             return (
               <motion.div key={stream.id} whileHover={{ y: -2 }} className="glass-plate rounded-lg p-6">
-                <div className="flex items-start justify-between mb-4">
+                <div className="flex items-start justify-between mb-3">
                   <div>
                     <div className="flex items-center gap-3 mb-1">
                       <span className="font-headline text-lg font-bold text-on-surface">
@@ -45,11 +45,18 @@ export default function FounderStreamsPage() {
                         {stream.isCancelled ? "Cancelled" : "Active"}
                       </span>
                     </div>
-                    <p className="font-mono text-[10px] text-on-surface-variant/70">
+                    <div className="flex items-center gap-2 font-mono text-[10px] text-on-surface-variant/50 uppercase tracking-widest">
+                      <span>{formatTokenAmount(stream.baseAmount)} linear</span>
+                      <span className="text-on-surface-variant/20">·</span>
+                      <span>{formatTokenAmount(stream.milestoneAmount)} milestone</span>
+                      <span className="text-on-surface-variant/20">·</span>
+                      <span>{formatTokenAmount(stream.cliffAmount)} cliff</span>
+                    </div>
+                    <p className="font-mono text-[10px] text-on-surface-variant/40 mt-1">
                       To: {formatAddress(stream.recipient)} — {stream.id}
                     </p>
                   </div>
-                  <div className="text-right">
+                  <div className="text-right shrink-0">
                     <p className="font-mono text-xs text-mint font-bold">
                       {formatTokenAmount(claimable)} claimable
                     </p>

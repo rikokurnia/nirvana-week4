@@ -6,6 +6,7 @@ export interface DistributionState {
   tokenSymbol: string;
   baseAmount: bigint;
   milestoneAmount: bigint;
+  cliffAmount: bigint;
   claimedAmount: bigint;
   startTime: number;
   endTime: number;
@@ -20,6 +21,7 @@ export interface CreateStreamParams {
   tokenSymbol: string;
   baseAmount: number;
   milestoneAmount: number;
+  cliffAmount: number;
   startTime: number;
   endTime: number;
   cliffTime: number;

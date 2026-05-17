@@ -39,14 +39,15 @@ export default function WorkerStreamsPage() {
           {myStreams.map((stream) => {
             const claimable = calculateClaimable(stream);
             const linearUnlocked = calculateLinearUnlocked(stream.startTime, stream.endTime, stream.baseAmount);
-            const totalAmount = stream.baseAmount + stream.milestoneAmount;
+            const totalAmount = stream.baseAmount + stream.milestoneAmount + stream.cliffAmount;
             const totalUnlocked = linearUnlocked + (stream.milestoneAchieved ? stream.milestoneAmount : BigInt(0));
             const totalPct = formatPercentage(totalUnlocked, totalAmount);
+            const pastCliff = Date.now() / 1000 >= stream.cliffTime;
 
             return (
               <Link key={stream.id} href={`/dashboard/worker/streams/${stream.id}`}>
                 <motion.div whileHover={{ y: -2 }} className="glass-plate rounded-lg p-6 group">
-                  <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-start justify-between mb-3">
                     <div>
                       <div className="flex items-center gap-3 mb-1">
                         <span className="font-headline text-lg font-bold text-on-surface">
@@ -56,11 +57,18 @@ export default function WorkerStreamsPage() {
                           {stream.isCancelled ? "Cancelled" : `${totalPct.toFixed(1)}% unlocked`}
                         </span>
                       </div>
-                      <p className="font-mono text-[10px] text-on-surface-variant/70">
+                      <div className="flex items-center gap-2 font-mono text-[10px] text-on-surface-variant/50 uppercase tracking-widest">
+                        <span>{formatTokenAmount(stream.baseAmount)} linear</span>
+                        <span className="text-on-surface-variant/20">·</span>
+                        <span>{formatTokenAmount(stream.milestoneAmount)} milestone</span>
+                        <span className="text-on-surface-variant/20">·</span>
+                        <span>{formatTokenAmount(stream.cliffAmount)} cliff</span>
+                      </div>
+                      <p className="font-mono text-[10px] text-on-surface-variant/40 mt-1">
                         {stream.id} — {formatDate(stream.startTime)} → {formatDate(stream.endTime)}
                       </p>
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 shrink-0">
                       {claimable > BigInt(0) && (
                         <span className="font-mono text-xs text-mint font-bold px-3 py-1 bg-mint/10 rounded-sm uppercase">
                           {formatTokenAmount(claimable)} ready

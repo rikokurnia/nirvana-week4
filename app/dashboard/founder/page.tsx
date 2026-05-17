@@ -22,7 +22,7 @@ export default function FounderPage() {
 
   const activeStreams = streams.filter((s) => !s.isCancelled);
   const totalAllocated = activeStreams.reduce(
-    (sum, s) => sum + s.baseAmount + s.milestoneAmount,
+    (sum, s) => sum + s.baseAmount + s.milestoneAmount + s.cliffAmount,
     BigInt(0)
   );
   const totalClaimed = streams.reduce((sum, s) => sum + s.claimedAmount, BigInt(0));
@@ -81,7 +81,7 @@ export default function FounderPage() {
         <div className="grid grid-cols-1 gap-4">
           {recentStreams.map((stream) => {
             const claimable = calculateClaimable(stream);
-            const totalAmount = stream.baseAmount + stream.milestoneAmount;
+            const totalAmount = stream.baseAmount + stream.milestoneAmount + stream.cliffAmount;
             const claimedPct = Number((stream.claimedAmount * BigInt(100)) / totalAmount);
             const now = Date.now() / 1000;
             const totalDuration = stream.endTime - stream.startTime;
@@ -94,7 +94,7 @@ export default function FounderPage() {
                 whileHover={{ y: -2 }}
                 className="glass-plate rounded-lg p-6"
               >
-                <div className="flex items-start justify-between mb-4">
+                <div className="flex items-start justify-between mb-3">
                   <div>
                     <div className="flex items-center gap-3 mb-1">
                       <span className="font-headline text-lg font-bold text-on-surface">
@@ -104,11 +104,18 @@ export default function FounderPage() {
                         {stream.isCancelled ? "Cancelled" : "Active"}
                       </span>
                     </div>
-                    <p className="font-mono text-[10px] text-on-surface-variant/70">
+                    <div className="flex items-center gap-2 font-mono text-[10px] text-on-surface-variant/50 uppercase tracking-widest">
+                      <span>{formatTokenAmount(stream.baseAmount)} linear</span>
+                      <span className="text-on-surface-variant/20">·</span>
+                      <span>{formatTokenAmount(stream.milestoneAmount)} milestone</span>
+                      <span className="text-on-surface-variant/20">·</span>
+                      <span>{formatTokenAmount(stream.cliffAmount)} cliff</span>
+                    </div>
+                    <p className="font-mono text-[10px] text-on-surface-variant/40 mt-1">
                       To: {formatAddress(stream.recipient)} — {stream.id}
                     </p>
                   </div>
-                  <div className="text-right">
+                  <div className="text-right shrink-0">
                     <p className="font-mono text-xs text-mint font-bold">
                       {formatTokenAmount(claimable)} claimable
                     </p>
@@ -129,11 +136,11 @@ export default function FounderPage() {
                     </div>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="font-mono text-[10px] text-on-surface-variant/50">
-                      Cliff: {pastCliff ? "Unlocked" : "Locked"}
+                    <p className={`font-mono text-[10px] ${pastCliff ? "text-mint" : "text-on-surface-variant/40"}`}>
+                      {pastCliff ? "Cliff Unlocked" : "Cliff Locked"}
                     </p>
-                    <p className="font-mono text-[10px] text-on-surface-variant/50">
-                      Milestone: {stream.milestoneAchieved ? "Done" : "Pending"}
+                    <p className={`font-mono text-[10px] ${stream.milestoneAchieved ? "text-mint" : "text-on-surface-variant/40"}`}>
+                      {stream.milestoneAchieved ? "Bonus Done" : "Bonus Pending"}
                     </p>
                   </div>
                 </div>

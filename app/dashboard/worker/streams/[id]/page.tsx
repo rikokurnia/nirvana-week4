@@ -46,12 +46,13 @@ export default function WorkerStreamDetailPage() {
     );
   }
 
+  const totalAmount = stream.baseAmount + stream.milestoneAmount + stream.cliffAmount;
   const linearUnlocked = calculateLinearUnlocked(stream.startTime, stream.endTime, stream.baseAmount);
   const totalUnlocked = calculateTotalUnlocked(stream);
   const claimable = calculateClaimable(stream);
   const linearPct = formatPercentage(linearUnlocked, stream.baseAmount);
-  const totalPct = formatPercentage(totalUnlocked, stream.baseAmount + stream.milestoneAmount);
-  const claimedPct = formatPercentage(stream.claimedAmount, stream.baseAmount + stream.milestoneAmount);
+  const totalPct = formatPercentage(totalUnlocked, totalAmount);
+  const claimedPct = formatPercentage(stream.claimedAmount, totalAmount);
 
   return (
     <div>
@@ -127,11 +128,56 @@ export default function WorkerStreamDetailPage() {
             <span className="font-mono text-[10px] text-on-surface-variant uppercase tracking-widest">Total Allocation</span>
           </div>
           <p className="font-headline text-2xl font-bold text-on-surface tracking-tight">
-            {formatTokenAmount(stream.baseAmount + stream.milestoneAmount)}
+            {formatTokenAmount(totalAmount)}
           </p>
-          <p className="font-mono text-[10px] text-on-surface-variant/50 mt-1">Base + Milestone</p>
+          <p className="font-mono text-[10px] text-on-surface-variant/50 mt-1">Linear + Milestone + Cliff</p>
         </motion.div>
       </div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.35 }}
+        className="glass-plate rounded-lg p-6 mb-8 border-mint/10"
+      >
+        <h3 className="font-headline text-base font-bold tracking-tight mb-4">Your Split</h3>
+        <div className="space-y-3">
+          <div className="flex items-center justify-between py-2 border-b border-white/5">
+            <div className="flex items-center gap-2">
+              <div className="w-2.5 h-2.5 rounded-sm bg-linear-to-r from-mint to-solana-green" />
+              <span className="font-mono text-xs text-on-surface-variant uppercase tracking-widest">Linear</span>
+            </div>
+            <div className="text-right">
+              <p className="font-mono text-sm text-on-surface font-bold">{formatTokenAmount(stream.baseAmount)}</p>
+              <p className="font-mono text-[10px] text-on-surface-variant/50">paid over time</p>
+            </div>
+          </div>
+          <div className="flex items-center justify-between py-2 border-b border-white/5">
+            <div className="flex items-center gap-2">
+              <div className="w-2.5 h-2.5 rounded-sm bg-mint" />
+              <span className="font-mono text-xs text-on-surface-variant uppercase tracking-widest">Milestone</span>
+            </div>
+            <div className="text-right">
+              <p className="font-mono text-sm text-on-surface font-bold">{formatTokenAmount(stream.milestoneAmount)}</p>
+              <p className={`font-mono text-[10px] ${stream.milestoneAchieved ? "text-mint" : "text-on-surface-variant/50"}`}>
+                {stream.milestoneAchieved ? "unlocked" : "locked until KPI"}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center justify-between py-2">
+            <div className="flex items-center gap-2">
+              <div className="w-2.5 h-2.5 rounded-sm bg-solana-green" />
+              <span className="font-mono text-xs text-on-surface-variant uppercase tracking-widest">Cliff Buffer</span>
+            </div>
+            <div className="text-right">
+              <p className="font-mono text-sm text-on-surface font-bold">{formatTokenAmount(stream.cliffAmount)}</p>
+              <p className={`font-mono text-[10px] ${Date.now() / 1000 >= stream.cliffTime ? "text-mint" : "text-on-surface-variant/50"}`}>
+                {Date.now() / 1000 >= stream.cliffTime ? "unlocked" : "locked until " + new Date(stream.cliffTime * 1000).toLocaleDateString()}
+              </p>
+            </div>
+          </div>
+        </div>
+      </motion.div>
 
       <motion.div
         initial={{ opacity: 0, y: 10 }}
