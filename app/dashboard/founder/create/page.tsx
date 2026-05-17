@@ -1,14 +1,16 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { useStreams } from "@/hooks/use-streams";
 import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
 import {
   ChevronRight,
-  Info,
   Sliders,
   Sparkles,
+  Plus,
+  Trash2,
+  Users,
 } from "lucide-react";
 import {
   getPresets,
@@ -22,45 +24,75 @@ const COMMON_TOKENS = [
   { symbol: "BONK", mint: "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263" },
 ];
 
+interface RecipientRow {
+  id: string;
+  address: string;
+  amount: string;
+}
+
+function newRow(): RecipientRow {
+  return { id: Math.random().toString(36).slice(2, 8), address: "", amount: "" };
+}
+
 export default function CreateStreamPage() {
   const { handleCreateStream, loading } = useStreams();
   const router = useRouter();
   const presets = getPresets();
 
-  const [recipient, setRecipient] = useState("");
   const [tokenSymbol, setTokenSymbol] = useState("SOL");
-  const [totalAmount, setTotalAmount] = useState("");
+  const [selectedPreset, setSelectedPreset] = useState<StreamPreset>(presets[0]);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const [selectedPreset, setSelectedPreset] = useState<StreamPreset>(presets[0]);
+  const [recipients, setRecipients] = useState<RecipientRow[]>([newRow()]);
 
-  const split = useMemo(() => {
-    if (!totalAmount || !startDate || !endDate) return null;
+  const updateRecipient = (id: string, field: "address" | "amount", value: string) => {
+    setRecipients((prev) =>
+      prev.map((r) => (r.id === id ? { ...r, [field]: value } : r))
+    );
+  };
+
+  const removeRecipient = (id: string) => {
+    if (recipients.length <= 1) return;
+    setRecipients((prev) => prev.filter((r) => r.id !== id));
+  };
+
+  const addRecipient = () => {
+    setRecipients((prev) => [...prev, newRow()]);
+  };
+
+  const validRecipients = recipients.filter((r) => r.address.trim() && r.amount.trim() && parseFloat(r.amount) > 0);
+  const totalAmount = validRecipients.reduce((sum, r) => sum + parseFloat(r.amount), 0);
+
+  const getSplit = (amount: string) => {
+    if (!amount || !startDate || !endDate) return null;
     const start = Math.floor(new Date(startDate).getTime() / 1000);
     const end = Math.floor(new Date(endDate).getTime() / 1000);
     if (start >= end) return null;
-    return calculateStreamSplit(parseFloat(totalAmount), start, end, selectedPreset);
-  }, [totalAmount, startDate, endDate, selectedPreset]);
+    return calculateStreamSplit(parseFloat(amount), start, end, selectedPreset);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!recipient || !totalAmount || !startDate || !endDate || !split) return;
+    if (validRecipients.length === 0 || !startDate || !endDate) return;
 
     const start = Math.floor(new Date(startDate).getTime() / 1000);
     const end = Math.floor(new Date(endDate).getTime() / 1000);
-
     const tokenMint = COMMON_TOKENS.find((t) => t.symbol === tokenSymbol)?.mint || COMMON_TOKENS[0].mint;
 
-    await handleCreateStream({
-      recipient,
-      tokenMint,
-      tokenSymbol,
-      baseAmount: split.linearAmount + split.cliffAmount,
-      milestoneAmount: split.milestoneAmount,
-      startTime: start,
-      endTime: end,
-      cliffTime: split.cliffTime,
-    });
+    for (const r of validRecipients) {
+      const split = getSplit(r.amount);
+      if (!split) continue;
+      await handleCreateStream({
+        recipient: r.address.trim(),
+        tokenMint,
+        tokenSymbol,
+        baseAmount: split.linearAmount + split.cliffAmount,
+        milestoneAmount: split.milestoneAmount,
+        startTime: start,
+        endTime: end,
+        cliffTime: split.cliffTime,
+      });
+    }
 
     router.push("/dashboard/founder");
   };
@@ -68,134 +100,145 @@ export default function CreateStreamPage() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="font-headline text-3xl font-bold tracking-tight">Create Stream</h1>
+        <h1 className="font-headline text-3xl font-bold tracking-tight">Create Streams</h1>
         <p className="font-mono text-xs text-on-surface-variant mt-2 uppercase tracking-widest">
-          Auto-split hybrid vesting
+          Pay multiple team members with one setup
         </p>
       </div>
 
       <form onSubmit={handleSubmit}>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="lg:col-span-2 glass-plate rounded-lg p-8"
+            className="lg:col-span-3 space-y-6"
           >
-            <h3 className="font-headline text-lg font-bold tracking-tight mb-6 flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-mint" />
-              Stream Details
-            </h3>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-              <div className="md:col-span-2">
-                <label className="font-mono text-[10px] text-on-surface-variant uppercase tracking-widest block mb-2">
-                  Recipient Address
-                </label>
-                <input
-                  type="text"
-                  value={recipient}
-                  onChange={(e) => setRecipient(e.target.value)}
-                  placeholder="DYw8jCTfwHNRJhhmFcbXvVDTqWMEVFBX6ZKUmG5CNSKK"
-                  className="w-full bg-white/3 border border-white/10 rounded-sm px-4 py-3 font-mono text-sm text-on-surface placeholder:text-on-surface-variant/30 focus:outline-none focus:border-mint/40 transition-colors"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="font-mono text-[10px] text-on-surface-variant uppercase tracking-widest block mb-2">
-                  Token
-                </label>
-                <select
-                  value={tokenSymbol}
-                  onChange={(e) => setTokenSymbol(e.target.value)}
-                  className="w-full bg-white/3 border border-white/10 rounded-sm px-4 py-3 font-mono text-sm text-on-surface focus:outline-none focus:border-mint/40 transition-colors appearance-none cursor-pointer"
-                >
-                  {COMMON_TOKENS.map((t) => (
-                    <option key={t.symbol} value={t.symbol} className="bg-surface text-on-surface">
-                      {t.symbol}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="font-mono text-[10px] text-on-surface-variant uppercase tracking-widest block mb-2">
-                  Total Amount
-                </label>
-                <input
-                  type="number"
-                  value={totalAmount}
-                  onChange={(e) => setTotalAmount(e.target.value)}
-                  placeholder="100000"
-                  step="any"
-                  min="0"
-                  className="w-full bg-white/3 border border-white/10 rounded-sm px-4 py-3 font-mono text-sm text-on-surface placeholder:text-on-surface-variant/30 focus:outline-none focus:border-mint/40 transition-colors"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="font-mono text-[10px] text-on-surface-variant uppercase tracking-widest block mb-2">
-                  Preset
-                </label>
-                <select
-                  value={selectedPreset.name}
-                  onChange={(e) => {
-                    const p = presets.find((x) => x.name === e.target.value);
-                    if (p) setSelectedPreset(p);
-                  }}
-                  className="w-full bg-white/3 border border-white/10 rounded-sm px-4 py-3 font-mono text-sm text-on-surface focus:outline-none focus:border-mint/40 transition-colors appearance-none cursor-pointer"
-                >
-                  {presets.map((p) => (
-                    <option key={p.name} value={p.name} className="bg-surface text-on-surface">
-                      {p.label} ({p.linearPercent}/{p.milestonePercent}/{p.cliffPercent})
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="font-mono text-[10px] text-on-surface-variant uppercase tracking-widest block mb-2">
-                  Start Date
-                </label>
-                <input
-                  type="date"
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                  className="w-full bg-white/3 border border-white/10 rounded-sm px-4 py-3 font-mono text-sm text-on-surface focus:outline-none focus:border-mint/40 transition-colors"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="font-mono text-[10px] text-on-surface-variant uppercase tracking-widest block mb-2">
-                  End Date
-                </label>
-                <input
-                  type="date"
-                  value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
-                  className="w-full bg-white/3 border border-white/10 rounded-sm px-4 py-3 font-mono text-sm text-on-surface focus:outline-none focus:border-mint/40 transition-colors"
-                  required
-                />
+            <div className="glass-plate rounded-lg p-6">
+              <h3 className="font-headline text-base font-bold tracking-tight mb-4 flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-mint" />
+                Stream Settings
+              </h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div>
+                  <label className="font-mono text-[10px] text-on-surface-variant uppercase tracking-widest block mb-2">Token</label>
+                  <select
+                    value={tokenSymbol}
+                    onChange={(e) => setTokenSymbol(e.target.value)}
+                    className="w-full bg-white/3 border border-white/10 rounded-sm px-3 py-2.5 font-mono text-sm text-on-surface focus:outline-none focus:border-mint/40 transition-colors appearance-none cursor-pointer"
+                  >
+                    {COMMON_TOKENS.map((t) => (
+                      <option key={t.symbol} value={t.symbol} className="bg-surface text-on-surface">{t.symbol}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="font-mono text-[10px] text-on-surface-variant uppercase tracking-widest block mb-2">Preset</label>
+                  <select
+                    value={selectedPreset.name}
+                    onChange={(e) => {
+                      const p = presets.find((x) => x.name === e.target.value);
+                      if (p) setSelectedPreset(p);
+                    }}
+                    className="w-full bg-white/3 border border-white/10 rounded-sm px-3 py-2.5 font-mono text-xs text-on-surface focus:outline-none focus:border-mint/40 transition-colors appearance-none cursor-pointer"
+                  >
+                    {presets.map((p) => (
+                      <option key={p.name} value={p.name} className="bg-surface text-on-surface">{p.label}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="font-mono text-[10px] text-on-surface-variant uppercase tracking-widest block mb-2">Start Date</label>
+                  <input
+                    type="date"
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    className="w-full bg-white/3 border border-white/10 rounded-sm px-3 py-2.5 font-mono text-sm text-on-surface focus:outline-none focus:border-mint/40 transition-colors"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="font-mono text-[10px] text-on-surface-variant uppercase tracking-widest block mb-2">End Date</label>
+                  <input
+                    type="date"
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    className="w-full bg-white/3 border border-white/10 rounded-sm px-3 py-2.5 font-mono text-sm text-on-surface focus:outline-none focus:border-mint/40 transition-colors"
+                    required
+                  />
+                </div>
               </div>
             </div>
 
-            {split && (
-              <div className="flex items-center gap-3 mb-4 p-4 bg-mint/5 rounded-sm border border-mint/10">
-                <Info className="w-4 h-4 text-mint shrink-0" />
-                <p className="font-mono text-[10px] text-mint uppercase tracking-widest leading-relaxed">
-                  Auto-split: {split.linearAmount.toLocaleString()} linear + {split.milestoneAmount.toLocaleString()} milestone + {split.cliffAmount.toLocaleString()} cliff buffer
-                </p>
+            <div className="glass-plate rounded-lg p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-headline text-base font-bold tracking-tight flex items-center gap-2">
+                  <Users className="w-4 h-4 text-mint" />
+                  Recipients <span className="font-mono text-xs text-mint">({validRecipients.length})</span>
+                </h3>
+                <button
+                  type="button"
+                  onClick={addRecipient}
+                  className="flex items-center gap-1.5 bg-mint text-black font-mono text-[10px] font-bold px-3 py-2 rounded-sm hover:brightness-110 transition-all uppercase"
+                >
+                  <Plus className="w-3 h-3" />
+                  Add Recipient
+                </button>
               </div>
-            )}
+
+              <div className="space-y-3">
+                {recipients.map((r, i) => (
+                  <div key={r.id} className="flex items-center gap-3">
+                    <span className="font-mono text-xs text-on-surface-variant/30 w-4 shrink-0">
+                      {i + 1}
+                    </span>
+                    <input
+                      type="text"
+                      value={r.address}
+                      onChange={(e) => updateRecipient(r.id, "address", e.target.value)}
+                      placeholder="Recipient wallet address"
+                      className="flex-1 bg-white/3 border border-white/10 rounded-sm px-3 py-2.5 font-mono text-sm text-on-surface placeholder:text-on-surface-variant/30 focus:outline-none focus:border-mint/40 transition-colors"
+                    />
+                    <input
+                      type="number"
+                      value={r.amount}
+                      onChange={(e) => updateRecipient(r.id, "amount", e.target.value)}
+                      placeholder="Amount"
+                      step="any"
+                      min="0"
+                      className="w-32 bg-white/3 border border-white/10 rounded-sm px-3 py-2.5 font-mono text-sm text-on-surface placeholder:text-on-surface-variant/30 focus:outline-none focus:border-mint/40 transition-colors"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeRecipient(r.id)}
+                      disabled={recipients.length <= 1}
+                      className="p-2 text-on-surface-variant/30 hover:text-red-400 transition-colors disabled:opacity-0 shrink-0"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+
+              {validRecipients.length > 0 && (
+                <div className="mt-4 pt-4 border-t border-white/5 flex items-center justify-between">
+                  <span className="font-mono text-[10px] text-on-surface-variant uppercase tracking-widest">
+                    Total Across All
+                  </span>
+                  <span className="font-mono text-sm text-mint font-bold">
+                    {totalAmount.toLocaleString()} {tokenSymbol}
+                  </span>
+                </div>
+              )}
+            </div>
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || validRecipients.length === 0}
               className="w-full bg-mint text-black font-mono text-sm font-bold px-8 py-4 rounded-sm hover:brightness-110 active:scale-95 transition-all uppercase flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_20px_rgba(47,243,200,0.2)]"
             >
-              {loading ? "Creating..." : "Create Stream"}
+              {loading
+                ? "Creating..."
+                : `Create ${validRecipients.length} Stream${validRecipients.length !== 1 ? "s" : ""}`}
               {!loading && <ChevronRight className="w-4 h-4" />}
             </button>
           </motion.div>
@@ -203,59 +246,66 @@ export default function CreateStreamPage() {
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="glass-plate rounded-lg p-6 h-fit"
+            className="lg:col-span-2 space-y-4"
           >
-            <h3 className="font-headline text-lg font-bold tracking-tight mb-4 flex items-center gap-2">
-              <Sliders className="w-5 h-5 text-mint" />
-              Split Preview
-            </h3>
+            <div className="glass-plate rounded-lg p-6 h-fit">
+              <h3 className="font-headline text-base font-bold tracking-tight mb-4 flex items-center gap-2">
+                <Sliders className="w-4 h-4 text-mint" />
+                Split Preview
+              </h3>
 
-            {split ? (
-              <div className="space-y-4">
-                <div>
-                  <div className="flex justify-between mb-1">
-                    <span className="font-mono text-[10px] text-on-surface-variant uppercase tracking-widest">Linear</span>
-                    <span className="font-mono text-[10px] text-mint font-bold">{selectedPreset.linearPercent}%</span>
+              {validRecipients.length > 0 && startDate && endDate ? (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-3 gap-2 text-center">
+                    <div>
+                      <span className="font-mono text-sm text-mint font-bold">{selectedPreset.linearPercent}%</span>
+                      <p className="font-mono text-[9px] text-on-surface-variant/50 uppercase tracking-widest mt-0.5">Linear</p>
+                    </div>
+                    <div>
+                      <span className="font-mono text-sm text-mint font-bold">{selectedPreset.milestonePercent}%</span>
+                      <p className="font-mono text-[9px] text-on-surface-variant/50 uppercase tracking-widest mt-0.5">Milestone</p>
+                    </div>
+                    <div>
+                      <span className="font-mono text-sm text-mint font-bold">{selectedPreset.cliffPercent}%</span>
+                      <p className="font-mono text-[9px] text-on-surface-variant/50 uppercase tracking-widest mt-0.5">Cliff</p>
+                    </div>
                   </div>
-                  <div className="h-1 bg-white/5 rounded-full overflow-hidden">
-                    <div className="h-full bg-linear-to-r from-mint to-solana-green" style={{ width: `${selectedPreset.linearPercent}%` }} />
-                  </div>
-                  <p className="font-mono text-[10px] text-on-surface-variant/50 mt-1">{split.linearAmount.toLocaleString()} {tokenSymbol}</p>
-                </div>
-                <div>
-                  <div className="flex justify-between mb-1">
-                    <span className="font-mono text-[10px] text-on-surface-variant uppercase tracking-widest">Milestone</span>
-                    <span className="font-mono text-[10px] text-mint font-bold">{selectedPreset.milestonePercent}%</span>
-                  </div>
-                  <div className="h-1 bg-white/5 rounded-full overflow-hidden">
-                    <div className="h-full bg-mint" style={{ width: `${selectedPreset.milestonePercent}%` }} />
-                  </div>
-                  <p className="font-mono text-[10px] text-on-surface-variant/50 mt-1">{split.milestoneAmount.toLocaleString()} {tokenSymbol}</p>
-                </div>
-                <div>
-                  <div className="flex justify-between mb-1">
-                    <span className="font-mono text-[10px] text-on-surface-variant uppercase tracking-widest">Cliff Buffer</span>
-                    <span className="font-mono text-[10px] text-mint font-bold">{selectedPreset.cliffPercent}%</span>
-                  </div>
-                  <div className="h-1 bg-white/5 rounded-full overflow-hidden">
-                    <div className="h-full bg-solana-green/80" style={{ width: `${selectedPreset.cliffPercent}%` }} />
-                  </div>
-                  <p className="font-mono text-[10px] text-on-surface-variant/50 mt-1">{split.cliffAmount.toLocaleString()} {tokenSymbol}</p>
-                </div>
 
-                <div className="pt-4 border-t border-white/5">
-                  <div className="flex justify-between">
-                    <span className="font-mono text-[10px] text-on-surface-variant uppercase tracking-widest">Cliff Unlocks</span>
-                    <span className="font-mono text-[10px] text-mint font-bold">
-                      {new Date(split.cliffTime * 1000).toLocaleDateString()}
-                    </span>
+                  <div className="h-2 bg-white/5 rounded-full overflow-hidden flex">
+                    <div className="h-full bg-linear-to-r from-mint to-solana-green transition-all" style={{ width: `${selectedPreset.linearPercent}%` }} />
+                    <div className="h-full bg-mint transition-all" style={{ width: `${selectedPreset.milestonePercent}%` }} />
+                    <div className="h-full bg-solana-green transition-all" style={{ width: `${selectedPreset.cliffPercent}%` }} />
                   </div>
+
+                  <div className="pt-4 border-t border-white/5">
+                    <p className="font-mono text-[10px] text-on-surface-variant/50 text-center uppercase tracking-widest leading-relaxed">
+                      {totalAmount.toLocaleString()} {tokenSymbol} split across {validRecipients.length} recipient{validRecipients.length !== 1 ? "s" : ""} with the {selectedPreset.label} preset
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <p className="font-mono text-xs text-on-surface-variant/50 leading-relaxed">
+                  Add at least one recipient with an amount and set dates to see the split preview.
+                </p>
+              )}
+            </div>
+
+            {validRecipients.length > 0 && (
+              <div className="glass-plate rounded-lg p-6">
+                <h3 className="font-headline text-base font-bold tracking-tight mb-4">Recipients</h3>
+                <div className="space-y-2">
+                  {validRecipients.map((r, i) => (
+                    <div key={r.id} className="flex items-center justify-between py-1.5 border-b border-white/5 last:border-0">
+                      <div>
+                        <p className="font-mono text-xs text-on-surface">{r.address.slice(0, 6)}...{r.address.slice(-4)}</p>
+                      </div>
+                      <span className="font-mono text-xs text-mint font-bold">
+                        {parseFloat(r.amount).toLocaleString()} {tokenSymbol}
+                      </span>
+                    </div>
+                  ))}
                 </div>
               </div>
-            ) : (
-              <p className="font-mono text-xs text-on-surface-variant/50 leading-relaxed">
-                Enter total amount and dates to see the auto-calculated split.
-              </p>
             )}
           </motion.div>
         </div>

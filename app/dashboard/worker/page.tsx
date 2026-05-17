@@ -1,6 +1,7 @@
 "use client";
 
 import { useStreams } from "@/hooks/use-streams";
+import { useAuth } from "@/app/providers/privy-provider";
 import {
   formatTokenAmount,
   calculateClaimable,
@@ -16,9 +17,11 @@ import {
 import Link from "next/link";
 
 export default function WorkerPage() {
-  const { streams } = useStreams();
+  const { getWorkerStreams } = useStreams();
+  const { user } = useAuth();
 
-  const myStreams = streams.filter((s) => s.recipient === "DYw8jCTfwHNRJhhmFcbXvVDTqWMEVFBX6ZKUmG5CNSKK");
+  const workerAddress = user?.wallet?.address || "";
+  const myStreams = getWorkerStreams(workerAddress);
   const activeStreams = myStreams.filter((s) => !s.isCancelled);
   const totalClaimed = myStreams.reduce((sum, s) => sum + s.claimedAmount, BigInt(0));
   const totalClaimable = activeStreams.reduce(

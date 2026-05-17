@@ -13,10 +13,10 @@ export default function CTA() {
         <div className="absolute -right-20 -bottom-20 w-80 h-80 bg-mint/5 blur-[100px] rounded-full group-hover:bg-mint/10 transition-colors" />
         <div className="relative z-10 text-center md:text-left">
           <h2 className="font-headline text-4xl mb-4 font-bold tracking-tight">
-            Secure your builder lineage.
+            Start paying your team fairly.
           </h2>
           <p className="text-mint font-mono text-xs font-bold tracking-[0.25em] uppercase">
-            Reserve your allocation in the ecosystem
+            Be one of the first to use Nirvana
           </p>
         </div>
         <div className="relative z-10 w-full md:w-auto">

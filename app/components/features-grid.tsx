@@ -12,15 +12,13 @@ export default function FeaturesGrid() {
       >
         <div className="relative z-10">
           <span className="text-mint font-mono text-[10px] font-bold mb-4 block uppercase tracking-widest">
-            01 / System Architecture
+            01 / How It Works
           </span>
           <h3 className="font-headline text-3xl text-on-surface mb-4 font-bold tracking-tight">
-            Automated Token Streams
+            Set It and Forget It
           </h3>
           <p className="text-on-surface-variant max-w-md leading-relaxed">
-            Nirvana replaces high-risk cliffs with linear protocol-enforced
-            liquidity. Every builder receives a continuous flow of assets,
-            ensuring long-term retention without short-term starvation.
+            One-time setup. Tokens flow automatically to your team on a schedule you choose. Linear payments keep builders paid. Milestone bonuses keep them motivated.
           </p>
         </div>
         <div className="mt-12 h-64 w-full border border-white/5 rounded-lg relative overflow-hidden bg-black/40">
@@ -41,12 +39,10 @@ export default function FeaturesGrid() {
           <Terminal className="text-mint w-8 h-8" />
         </div>
         <h3 className="font-headline text-3xl text-on-surface mb-6 font-bold tracking-tight">
-          Code as Law
+          Trust Through Code
         </h3>
         <p className="text-on-surface-variant leading-relaxed mb-10">
-          Utilizing code-enforced rules to eliminate the &apos;vesting
-          gamble&apos; through automated trust. No manual overrides. No
-          board-room disputes.
+          Smart contracts handle everything. No manual approvals, no arguments. Just math that everyone can verify.
         </p>
         <ul className="space-y-4 mt-auto">
           {[

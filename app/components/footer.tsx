@@ -12,7 +12,7 @@ export default function Footer() {
             Nirvana
           </div>
           <p className="font-sans text-sm text-on-surface-variant">
-            &copy; 2024 Nirvana Protocol. Precision Vesting.
+            &copy; 2025 Nirvana Protocol. Precision Vesting.
           </p>
         </div>
 

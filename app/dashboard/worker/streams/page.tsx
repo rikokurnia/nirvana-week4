@@ -1,6 +1,7 @@
 "use client";
 
 import { useStreams } from "@/hooks/use-streams";
+import { useAuth } from "@/app/providers/privy-provider";
 import {
   formatTokenAmount,
   calculateClaimable,
@@ -13,11 +14,12 @@ import { motion } from "motion/react";
 import { ChevronRight, Clock, Target, Wallet, Shield, Calendar } from "lucide-react";
 import Link from "next/link";
 
-const WORKER_ADDRESS = "DYw8jCTfwHNRJhhmFcbXvVDTqWMEVFBX6ZKUmG5CNSKK";
-
 export default function WorkerStreamsPage() {
-  const { streams } = useStreams();
-  const myStreams = streams.filter((s) => s.recipient === WORKER_ADDRESS);
+  const { getWorkerStreams } = useStreams();
+  const { user } = useAuth();
+
+  const workerAddress = user?.wallet?.address || "";
+  const myStreams = getWorkerStreams(workerAddress);
 
   return (
     <div>

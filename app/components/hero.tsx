@@ -30,9 +30,9 @@ export default function Hero() {
         transition={{ delay: 0.1 }}
         className="font-headline text-5xl md:text-7xl mb-6 max-w-4xl tracking-tighter glow-text leading-[1.1] font-bold"
       >
-        End the vesting gamble with a{" "}
+        Pay your team{" "}
         <span className="mint-gradient-text">
-          balance of steady cashflow.
+          in tokens. Automatically.
         </span>
       </motion.h1>
 
@@ -42,9 +42,7 @@ export default function Hero() {
         transition={{ delay: 0.2 }}
         className="font-sans text-lg md:text-xl text-on-surface-variant max-w-2xl mb-12"
       >
-        Give builders survival cash while securing their long-term project
-        upside. Nirvana automates trust through code-enforced financial
-        alignment.
+        Set up streaming payments for anyone on your team. Tokens flow steadily. Builders earn without stress. Projects keep long-term commitment. No cliffs, no drama.
       </motion.p>
 
       {authenticated ? (
@@ -62,7 +60,7 @@ export default function Hero() {
             Go to Dashboard
           </button>
           <button
-            onClick={() => router.push("/dashboard/create")}
+            onClick={() => router.push("/dashboard/founder/create")}
             className="border border-mint/30 text-mint font-mono text-sm font-bold px-10 py-4 rounded-sm hover:bg-mint/10 transition-all uppercase flex items-center justify-center gap-2"
           >
             Create Stream
@@ -78,13 +76,13 @@ export default function Hero() {
         >
           <input
             className="flex-grow bg-transparent border-none focus:ring-0 text-on-surface px-4 py-3 font-mono text-sm placeholder:text-on-surface-variant/40"
-            placeholder="builder@protocol.eth"
+            placeholder="your@email.com"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
           <button className="bg-solana-green text-black font-mono text-xs font-bold px-8 py-4 rounded-sm hover:brightness-110 active:scale-95 transition-all whitespace-nowrap shadow-[0_0_20px_rgba(20,241,149,0.2)] uppercase flex items-center justify-center gap-2">
-            Claim automated balance
+            Join Waitlist
             <ChevronRight className="w-4 h-4" />
           </button>
         </motion.div>
@@ -98,7 +96,7 @@ export default function Hero() {
       >
         <Shield className="w-4 h-4" />
         <span className="font-mono text-[9px] tracking-[0.25em] font-bold uppercase">
-          Encrypted & non-custodial entry
+          Smart contract powered & non-custodial
         </span>
       </motion.div>
     </section>

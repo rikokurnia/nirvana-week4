@@ -6,19 +6,19 @@ const models = [
   {
     title: "Ascend",
     id: "M-01",
-    desc: "Performance-weighted vesting that scales with project milestones and individual contribution metrics.",
+    desc: "Earn more as the project grows — tokens scale with milestones and your contributions.",
     progress: 75,
   },
   {
     title: "Balance",
     id: "M-02",
-    desc: "The golden ratio of liquid cashflow versus long-term token upside. Perfect for sustainable survival.",
+    desc: "The sweet spot between steady income now and bigger token upside later.",
     progress: 50,
   },
   {
     title: "Flow",
     id: "M-03",
-    desc: "A frictionless, per-second streaming model that removes the stress of monthly or quarterly cliffs.",
+    desc: "A smooth, per-second payment stream. No waiting for monthly cliffs.",
     progress: 100,
   },
 ];
