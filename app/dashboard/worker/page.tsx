@@ -65,6 +65,9 @@ export default function WorkerPage() {
             const claimable = calculateClaimable(stream);
             const totalAmount = stream.baseAmount + stream.milestoneAmount;
             const claimedPct = Number((stream.claimedAmount * BigInt(100)) / totalAmount);
+            const now = Date.now() / 1000;
+            const pastCliff = now >= stream.cliffTime;
+            const timePct = Math.min(100, Math.max(0, Math.round(((now - stream.startTime) / (stream.endTime - stream.startTime)) * 100)));
             return (
               <Link key={stream.id} href={`/dashboard/worker/streams/${stream.id}`}>
                 <motion.div whileHover={{ y: -2 }} className="glass-plate rounded-lg p-6">
@@ -72,14 +75,14 @@ export default function WorkerPage() {
                     <div>
                       <div className="flex items-center gap-3 mb-1">
                         <span className="font-headline text-lg font-bold text-on-surface">
-                          {stream.tokenSymbol}
+                          {formatTokenAmount(totalAmount)} {stream.tokenSymbol}
                         </span>
                         <span className={`font-mono text-[10px] px-2 py-0.5 rounded-sm uppercase tracking-widest ${stream.isCancelled ? "bg-red-400/10 text-red-400" : "bg-mint/10 text-mint"}`}>
                           {stream.isCancelled ? "Cancelled" : "Active"}
                         </span>
                       </div>
                       <p className="font-mono text-[10px] text-on-surface-variant/70">
-                        Total: {formatTokenAmount(totalAmount)} — {claimedPct}% claimed
+                        {formatTokenAmount(stream.baseAmount)} linear + {formatTokenAmount(stream.milestoneAmount)} milestone
                       </p>
                     </div>
                     <div className="text-right">
@@ -88,16 +91,33 @@ export default function WorkerPage() {
                           {formatTokenAmount(claimable)} ready
                         </span>
                       )}
+                      <span className="font-mono text-[10px] text-on-surface-variant/50 mt-0.5 block">
+                        {claimedPct}% claimed
+                      </span>
                     </div>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1 mr-4">
-                      <div className="h-2 bg-white/5 rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-linear-to-r from-mint to-solana-green"
-                          style={{ width: `${claimedPct}%` }}
-                        />
+
+                  <div className="space-y-2 mb-3">
+                    <div>
+                      <div className="flex justify-between mb-1">
+                        <span className="font-mono text-[9px] text-on-surface-variant/50 uppercase tracking-widest">Time</span>
+                        <span className="font-mono text-[9px] text-on-surface-variant/50">{timePct}%</span>
                       </div>
+                      <div className="h-1.5 bg-white/5 rounded-full overflow-hidden flex">
+                        <div className="h-full bg-linear-to-r from-mint to-solana-green" style={{ width: `${claimedPct}%` }} />
+                        <div className="h-full bg-white/10" style={{ width: `${Math.max(0, timePct - claimedPct)}%` }} />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="flex gap-3 font-mono text-[9px] uppercase tracking-widest">
+                      <span className={pastCliff ? "text-mint" : "text-on-surface-variant/40"}>
+                        {pastCliff ? "Cliff Unlocked" : "Cliff Locked"}
+                      </span>
+                      <span className={stream.milestoneAchieved ? "text-mint" : "text-on-surface-variant/40"}>
+                        {stream.milestoneAchieved ? "Bonus Ready" : "Bonus Pending"}
+                      </span>
                     </div>
                     <ChevronRight className="w-4 h-4 text-mint/50" />
                   </div>

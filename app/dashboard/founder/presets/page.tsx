@@ -215,6 +215,7 @@ function AddPresetForm({
       linearPercent: linear,
       milestonePercent: milestone,
       cliffPercent: cliff,
+      description: `${label.trim()}: ${linear}% linear salary, ${milestone}% milestone bonus, ${cliff}% cliff buffer.`,
     });
   };
 

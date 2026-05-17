@@ -4,6 +4,7 @@ import { useStreams } from "@/hooks/use-streams";
 import {
   formatTokenAmount,
   calculateClaimable,
+  formatAddress,
 } from "@/lib/utils";
 import { motion } from "motion/react";
 import {
@@ -81,27 +82,64 @@ export default function FounderPage() {
           {recentStreams.map((stream) => {
             const claimable = calculateClaimable(stream);
             const totalAmount = stream.baseAmount + stream.milestoneAmount;
+            const claimedPct = Number((stream.claimedAmount * BigInt(100)) / totalAmount);
+            const now = Date.now() / 1000;
+            const totalDuration = stream.endTime - stream.startTime;
+            const elapsed = Math.max(0, now - stream.startTime);
+            const timeProgress = Math.min(100, Math.round((elapsed / totalDuration) * 100));
+            const pastCliff = now >= stream.cliffTime;
             return (
               <motion.div
                 key={stream.id}
                 whileHover={{ y: -2 }}
-                className="glass-plate rounded-lg p-6 flex items-center justify-between"
+                className="glass-plate rounded-lg p-6"
               >
-                <div>
-                  <div className="flex items-center gap-3 mb-1">
-                    <span className="font-headline text-lg font-bold text-on-surface">
-                      {formatTokenAmount(totalAmount)} {stream.tokenSymbol}
-                    </span>
-                    <span className={`font-mono text-[10px] uppercase tracking-widest ${stream.isCancelled ? "text-red-400" : "text-mint"}`}>
-                      {stream.isCancelled ? "Cancelled" : "Active"}
-                    </span>
+                <div className="flex items-start justify-between mb-4">
+                  <div>
+                    <div className="flex items-center gap-3 mb-1">
+                      <span className="font-headline text-lg font-bold text-on-surface">
+                        {formatTokenAmount(totalAmount)} {stream.tokenSymbol}
+                      </span>
+                      <span className={`font-mono text-[10px] px-2 py-0.5 rounded-sm uppercase tracking-widest ${stream.isCancelled ? "bg-red-400/10 text-red-400" : "bg-mint/10 text-mint"}`}>
+                        {stream.isCancelled ? "Cancelled" : "Active"}
+                      </span>
+                    </div>
+                    <p className="font-mono text-[10px] text-on-surface-variant/70">
+                      To: {formatAddress(stream.recipient)} — {stream.id}
+                    </p>
                   </div>
-                  <p className="font-mono text-[10px] text-on-surface-variant/70">
-                    {formatTokenAmount(claimable)} claimable — {stream.id}
-                  </p>
+                  <div className="text-right">
+                    <p className="font-mono text-xs text-mint font-bold">
+                      {formatTokenAmount(claimable)} claimable
+                    </p>
+                    <p className="font-mono text-[10px] text-on-surface-variant/50 mt-0.5">
+                      {claimedPct}% claimed
+                    </p>
+                  </div>
                 </div>
+
+                <div className="flex items-center gap-4 mb-3">
+                  <div className="flex-1">
+                    <div className="flex justify-between mb-1">
+                      <span className="font-mono text-[9px] text-on-surface-variant/40 uppercase tracking-widest">Time</span>
+                      <span className="font-mono text-[9px] text-on-surface-variant/40">{timeProgress}%</span>
+                    </div>
+                    <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
+                      <div className="h-full bg-white/10 transition-all" style={{ width: `${timeProgress}%` }} />
+                    </div>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <p className="font-mono text-[10px] text-on-surface-variant/50">
+                      Cliff: {pastCliff ? "Unlocked" : "Locked"}
+                    </p>
+                    <p className="font-mono text-[10px] text-on-surface-variant/50">
+                      Milestone: {stream.milestoneAchieved ? "Done" : "Pending"}
+                    </p>
+                  </div>
+                </div>
+
                 <Link
-                  href={`/dashboard/founder/streams`}
+                  href="/dashboard/founder/streams"
                   className="text-mint font-mono text-xs font-bold uppercase tracking-widest hover:brightness-110 transition-colors flex items-center gap-1"
                 >
                   Manage

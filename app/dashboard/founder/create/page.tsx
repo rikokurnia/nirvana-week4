@@ -277,9 +277,15 @@ export default function CreateStreamPage() {
                     <div className="h-full bg-solana-green transition-all" style={{ width: `${selectedPreset.cliffPercent}%` }} />
                   </div>
 
+                  <div className="p-3 bg-mint/5 rounded-sm border border-mint/10">
+                    <p className="font-sans text-xs text-on-surface-variant leading-relaxed">
+                      {selectedPreset.description || `${selectedPreset.label}: ${selectedPreset.linearPercent}% linear salary, ${selectedPreset.milestonePercent}% milestone bonus, ${selectedPreset.cliffPercent}% cliff buffer.`}
+                    </p>
+                  </div>
+
                   <div className="pt-4 border-t border-white/5">
                     <p className="font-mono text-[10px] text-on-surface-variant/50 text-center uppercase tracking-widest leading-relaxed">
-                      {totalAmount.toLocaleString()} {tokenSymbol} split across {validRecipients.length} recipient{validRecipients.length !== 1 ? "s" : ""} with the {selectedPreset.label} preset
+                      {totalAmount.toLocaleString()} {tokenSymbol} split across {validRecipients.length} recipient{validRecipients.length !== 1 ? "s" : ""}
                     </p>
                   </div>
                 </div>
