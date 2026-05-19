@@ -170,6 +170,7 @@ function Sidebar({
           onClick={() => router.push("/")}
           className="flex items-center gap-2 cursor-pointer group"
         >
+          <img src="/images/removbg.png" alt="Nirvana" className="w-7 h-7 object-contain" />
           <span className="font-headline text-lg font-bold text-mint tracking-tighter group-hover:brightness-110 transition-all">
             Nirvana
           </span>

@@ -1,6 +1,6 @@
 "use client";
 
-import { Github, Twitter, Terminal, Boxes } from "lucide-react";
+import { Github, Twitter, Terminal } from "lucide-react";
 
 export default function Footer() {
   return (
@@ -8,7 +8,7 @@ export default function Footer() {
       <div className="flex flex-col md:flex-row justify-between items-center md:items-start gap-12">
         <div className="flex flex-col items-center md:items-start gap-2">
           <div className="text-2xl font-headline font-bold text-mint tracking-tighter flex items-center gap-2">
-            <Boxes className="w-6 h-6" />
+            <img src="/images/removbg.png" alt="Nirvana" className="w-6 h-6 object-contain" />
             Nirvana
           </div>
           <p className="font-sans text-sm text-on-surface-variant">

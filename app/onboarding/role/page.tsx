@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
 import { useRole } from "@/hooks/use-role";
 import { useAuth } from "@/app/providers/privy-provider";
-import { Boxes, Briefcase, Hammer } from "lucide-react";
+import { Briefcase, Hammer } from "lucide-react";
 
 export default function RolePage() {
   const { setRole } = useRole();
@@ -23,7 +23,7 @@ export default function RolePage() {
           animate={{ opacity: 1, y: 0 }}
         >
           <div className="flex items-center justify-center gap-2 mb-6">
-            <Boxes className="w-8 h-8 text-mint" />
+            <img src="/images/removbg.png" alt="Nirvana" className="w-8 h-8 object-contain" />
             <span className="font-headline text-2xl font-bold text-mint tracking-tighter">Nirvana</span>
           </div>
           <h1 className="font-headline text-4xl md:text-5xl font-bold tracking-tight mb-4">

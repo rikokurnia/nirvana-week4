@@ -1,6 +1,6 @@
 "use client";
 
-import { Wallet, Boxes, LayoutDashboard, RefreshCw } from "lucide-react";
+import { Wallet, LayoutDashboard, RefreshCw } from "lucide-react";
 import { useAuth } from "@/app/providers/privy-provider";
 import { useRole } from "@/hooks/use-role";
 import { formatAddress } from "@/lib/utils";
@@ -15,7 +15,7 @@ export default function Navbar() {
     <nav className="fixed top-0 left-0 w-full z-50 bg-black/80 backdrop-blur-xl border-b border-white/5">
       <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
         <a href="/" className="text-2xl font-headline font-bold text-mint tracking-tighter flex items-center gap-2">
-          <Boxes className="w-8 h-8" />
+          <img src="/images/removbg.png" alt="Nirvana" className="w-8 h-8 object-contain" />
           Nirvana
         </a>
         <div className="hidden md:flex gap-8 items-center">
