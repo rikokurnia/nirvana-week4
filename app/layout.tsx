@@ -26,6 +26,9 @@ export const metadata: Metadata = {
   title: "Nirvana Digital Protocol",
   description:
     "Precision Vesting & Automated Token Streams for high-growth projects.",
+  icons: {
+    icon: "/favicon.png",
+  },
 };
 
 export default function RootLayout({
