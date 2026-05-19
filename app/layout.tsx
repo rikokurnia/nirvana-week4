@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Hanken_Grotesk, Inter, JetBrains_Mono } from "next/font/google";
+import Script from "next/script";
 import { PrivyProvider } from "./providers/privy-provider";
 import AIChat from "./components/ai-chat";
 import "./globals.css";
@@ -31,6 +32,11 @@ export const metadata: Metadata = {
   },
 };
 
+const PLAUSIBLE_DOMAIN = process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN;
+const PLAUSIBLE_SRC = process.env.NEXT_PUBLIC_PLAUSIBLE_CUSTOM_DOMAIN
+  ? `https://${process.env.NEXT_PUBLIC_PLAUSIBLE_CUSTOM_DOMAIN}/js/script.js`
+  : "https://plausible.io/js/script.js";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -41,6 +47,14 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${hankenGrotesk.variable} ${jetbrainsMono.variable} min-h-screen antialiased`}
       >
+        {PLAUSIBLE_DOMAIN && (
+          <Script
+            defer
+            data-domain={PLAUSIBLE_DOMAIN}
+            src={PLAUSIBLE_SRC}
+            strategy="afterInteractive"
+          />
+        )}
         <PrivyProvider>
           {children}
           <AIChat />

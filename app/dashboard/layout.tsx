@@ -11,7 +11,7 @@ import {
   Settings,
   ArrowLeft,
   Home,
-  ChevronDown,
+  BarChart3,
   LogOut,
   Copy,
   Check,
@@ -154,11 +154,13 @@ function Sidebar({
     { label: "Create Stream", icon: PlusCircle, path: "/dashboard/founder/create" },
     { label: "My Streams", icon: List, path: "/dashboard/founder/streams" },
     { label: "Customize Presets", icon: Settings, path: "/dashboard/founder/presets" },
+    { label: "Analytics", icon: BarChart3, path: "/dashboard/analytics" },
   ];
 
   const workerMenu = [
     { label: "Overview", icon: LayoutDashboard, path: "/dashboard/worker" },
     { label: "My Streams", icon: List, path: "/dashboard/worker/streams" },
+    { label: "Analytics", icon: BarChart3, path: "/dashboard/analytics" },
   ];
 
   const menuItems = role === "founder" ? founderMenu : workerMenu;
