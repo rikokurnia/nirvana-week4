@@ -2,12 +2,13 @@
 
 import { motion } from "motion/react";
 import { Shield, ChevronRight, LayoutDashboard } from "lucide-react";
-import { useState } from "react";
 import { useAuth } from "@/app/providers/privy-provider";
 import { useRouter } from "next/navigation";
 
+const WAITLIST_URL =
+  "https://docs.google.com/forms/d/e/1FAIpQLSd91VPqiuJ_ftGuZQT204T2LP7dUiZxLQBBvRLcQP3dfshbeg/viewform?usp=send_form";
+
 export default function Hero() {
-  const [email, setEmail] = useState("");
   const { authenticated } = useAuth();
   const router = useRouter();
 
@@ -42,7 +43,9 @@ export default function Hero() {
         transition={{ delay: 0.2 }}
         className="font-sans text-lg md:text-xl text-on-surface-variant max-w-2xl mb-12"
       >
-        Set up streaming payments for anyone on your team. Tokens flow steadily. Builders earn without stress. Projects keep long-term commitment. No cliffs, no drama.
+        Set up streaming payments for anyone on your team. Tokens flow steadily.
+        Builders earn without stress. Projects keep long-term commitment. No
+        cliffs, no drama.
       </motion.p>
 
       {authenticated ? (
@@ -72,19 +75,17 @@ export default function Hero() {
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.3 }}
-          className="w-full max-w-xl flex flex-col md:flex-row gap-2 p-2 glass-plate rounded-lg group"
+          className="flex flex-col sm:flex-row gap-4"
         >
-          <input
-            className="flex-grow bg-transparent border-none focus:ring-0 text-on-surface px-4 py-3 font-mono text-sm placeholder:text-on-surface-variant/40"
-            placeholder="your@email.com"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          <button className="bg-solana-green text-black font-mono text-xs font-bold px-8 py-4 rounded-sm hover:brightness-110 active:scale-95 transition-all whitespace-nowrap shadow-[0_0_20px_rgba(20,241,149,0.2)] uppercase flex items-center justify-center gap-2">
-            Join Waitlist
+          <a
+            href={WAITLIST_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="bg-mint text-black font-mono text-sm font-bold px-12 py-4 rounded-sm hover:brightness-110 active:scale-95 transition-all uppercase flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(47,243,200,0.2)]"
+          >
+            Join the Waitlist
             <ChevronRight className="w-4 h-4" />
-          </button>
+          </a>
         </motion.div>
       )}
 
