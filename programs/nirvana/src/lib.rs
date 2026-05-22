@@ -64,7 +64,7 @@ pub mod nirvana_protocol {
     pub fn trigger_milestone(ctx: Context<TriggerMilestone>) -> Result<()> {
         let state = &mut ctx.accounts.distribution_state;
 
-        require!(!state.is_cancelled, NirvanaError::StreamCancelled);
+        require!(!state.is_cancelled, NirvanaError::AlreadyCancelled);
         require!(!state.milestone_achieved, NirvanaError::MilestoneAlreadyAchieved);
 
         state.milestone_achieved = true;
@@ -80,7 +80,7 @@ pub mod nirvana_protocol {
         let state = &mut ctx.accounts.distribution_state;
         let now = Clock::get()?.unix_timestamp;
 
-        require!(!state.is_cancelled, NirvanaError::StreamCancelled);
+        require!(!state.is_cancelled, NirvanaError::AlreadyCancelled);
         require!(now >= state.cliff_time, NirvanaError::CliffNotReached);
 
         let total_duration = state
@@ -119,7 +119,15 @@ pub mod nirvana_protocol {
             .checked_sub(state.claimed_amount)
             .ok_or(NirvanaError::MathOverflow)?;
 
-        require!(claimable > 0, NirvanaError::NothingToClaim);
+        require!(claimable > 0, NirvanaError::NothingToWithdraw);
+
+        if now > state.end_time {
+            let total_deposited = state
+                .base_amount
+                .checked_add(state.milestone_amount)
+                .ok_or(NirvanaError::MathOverflow)?;
+            require!(state.claimed_amount < total_deposited, NirvanaError::StreamExpired);
+        }
 
         state.claimed_amount = state
             .claimed_amount
@@ -161,7 +169,7 @@ pub mod nirvana_protocol {
     pub fn cancel(ctx: Context<Cancel>) -> Result<()> {
         let state = &mut ctx.accounts.distribution_state;
 
-        require!(!state.is_cancelled, NirvanaError::StreamCancelled);
+        require!(!state.is_cancelled, NirvanaError::AlreadyCancelled);
 
         let balance = ctx.accounts.token_vault.amount;
         let now = Clock::get()?.unix_timestamp;
@@ -205,6 +213,13 @@ pub mod nirvana_protocol {
         let unlocked = linear_unlocked
             .checked_add(milestone_unlocked)
             .ok_or(NirvanaError::MathOverflow)?;
+
+        let total_deposited = state
+            .base_amount
+            .checked_add(state.milestone_amount)
+            .ok_or(NirvanaError::MathOverflow)?;
+
+        require!(unlocked < total_deposited, NirvanaError::FullyVested);
 
         let recipient_share = unlocked
             .checked_sub(state.claimed_amount)
@@ -451,11 +466,15 @@ pub enum NirvanaError {
     #[msg("Milestone already achieved.")]
     MilestoneAlreadyAchieved,
     #[msg("Stream cancelled.")]
-    StreamCancelled,
+    AlreadyCancelled,
     #[msg("Cliff not reached.")]
     CliffNotReached,
-    #[msg("Nothing to claim.")]
-    NothingToClaim,
+    #[msg("Nothing to withdraw.")]
+    NothingToWithdraw,
     #[msg("Math overflow.")]
     MathOverflow,
+    #[msg("Stream fully vested.")]
+    FullyVested,
+    #[msg("Stream expired.")]
+    StreamExpired,
 }
